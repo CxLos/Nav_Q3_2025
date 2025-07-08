@@ -1819,143 +1819,143 @@ df_zip = df['ZIP'].value_counts().reset_index(name='Residents').rename(columns={
 # print(df_zip.head())
 
 # Create a folium map
-m = folium.Map([30.2672, -97.7431], zoom_start=10)
+# m = folium.Map([30.2672, -97.7431], zoom_start=10)
 
-# Add different tile sets
-folium.TileLayer('OpenStreetMap', attr='© OpenStreetMap contributors').add_to(m)
-folium.TileLayer('Stamen Terrain', attr='Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
-folium.TileLayer('Stamen Toner', attr='Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
-folium.TileLayer('Stamen Watercolor', attr='Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
-folium.TileLayer('CartoDB positron', attr='Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
-folium.TileLayer('CartoDB dark_matter', attr='Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
+# # Add different tile sets
+# folium.TileLayer('OpenStreetMap', attr='© OpenStreetMap contributors').add_to(m)
+# folium.TileLayer('Stamen Terrain', attr='Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
+# folium.TileLayer('Stamen Toner', attr='Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
+# folium.TileLayer('Stamen Watercolor', attr='Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
+# folium.TileLayer('CartoDB positron', attr='Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
+# folium.TileLayer('CartoDB dark_matter', attr='Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.').add_to(m)
 
-# Available map styles
-map_styles = {
-    'OpenStreetMap': {
-        'tiles': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    },
-    'Stamen Terrain': {
-        'tiles': 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
-        'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under ODbL.'
-    },
-    'Stamen Toner': {
-        'tiles': 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
-        'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under ODbL.'
-    },
-    'Stamen Watercolor': {
-        'tiles': 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg',
-        'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under ODbL.'
-    },
-    'CartoDB positron': {
-        'tiles': 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-    },
-    'CartoDB dark_matter': {
-        'tiles': 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-    },
-    'ESRI Imagery': {
-        'tiles': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        'attribution': 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-    }
-}
+# # Available map styles
+# map_styles = {
+#     'OpenStreetMap': {
+#         'tiles': 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+#         'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+#     },
+#     'Stamen Terrain': {
+#         'tiles': 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
+#         'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under ODbL.'
+#     },
+#     'Stamen Toner': {
+#         'tiles': 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
+#         'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under ODbL.'
+#     },
+#     'Stamen Watercolor': {
+#         'tiles': 'https://stamen-tiles.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg',
+#         'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under ODbL.'
+#     },
+#     'CartoDB positron': {
+#         'tiles': 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+#         'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+#     },
+#     'CartoDB dark_matter': {
+#         'tiles': 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+#         'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+#     },
+#     'ESRI Imagery': {
+#         'tiles': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+#         'attribution': 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+#     }
+# }
 
-# Add tile layers to the map
-for style, info in map_styles.items():
-    folium.TileLayer(tiles=info['tiles'], attr=info['attribution'], name=style).add_to(m)
+# # Add tile layers to the map
+# for style, info in map_styles.items():
+#     folium.TileLayer(tiles=info['tiles'], attr=info['attribution'], name=style).add_to(m)
 
-# Select a style
-# selected_style = 'OpenStreetMap'
-# selected_style = 'Stamen Terrain'
-# selected_style = 'Stamen Toner'
-# selected_style = 'Stamen Watercolor'
-selected_style = 'CartoDB positron'
-# selected_style = 'CartoDB dark_matter'
-# selected_style = 'ESRI Imagery'
+# # Select a style
+# # selected_style = 'OpenStreetMap'
+# # selected_style = 'Stamen Terrain'
+# # selected_style = 'Stamen Toner'
+# # selected_style = 'Stamen Watercolor'
+# selected_style = 'CartoDB positron'
+# # selected_style = 'CartoDB dark_matter'
+# # selected_style = 'ESRI Imagery'
 
-# Apply the selected style
-if selected_style in map_styles:
-    style_info = map_styles[selected_style]
-    # print(f"Selected style: {selected_style}")
-    folium.TileLayer(
-        tiles=style_info['tiles'],
-        attr=style_info['attribution'],
-        name=selected_style
-    ).add_to(m)
-else:
-    print(f"Selected style '{selected_style}' is not in the map styles dictionary.")
-     # Fallback to a default style
-    folium.TileLayer('OpenStreetMap').add_to(m)
+# # Apply the selected style
+# if selected_style in map_styles:
+#     style_info = map_styles[selected_style]
+#     # print(f"Selected style: {selected_style}")
+#     folium.TileLayer(
+#         tiles=style_info['tiles'],
+#         attr=style_info['attribution'],
+#         name=selected_style
+#     ).add_to(m)
+# else:
+#     print(f"Selected style '{selected_style}' is not in the map styles dictionary.")
+#      # Fallback to a default style
+#     folium.TileLayer('OpenStreetMap').add_to(m)
 
-# Function to get coordinates from zip code
-def get_coordinates(zip_code):
-    geolocator = Nominatim(user_agent="response_q4_2024.py")
-    location = geolocator.geocode({"postalcode": zip_code, "country": "USA"})
-    if location:
-        return location.latitude, location.longitude
-    else:
-        print(f"Could not find coordinates for zip code: {zip_code}")
-        return None, None
+# # Function to get coordinates from zip code
+# def get_coordinates(zip_code):
+#     geolocator = Nominatim(user_agent="response_q4_2024.py")
+#     location = geolocator.geocode({"postalcode": zip_code, "country": "USA"})
+#     if location:
+#         return location.latitude, location.longitude
+#     else:
+#         print(f"Could not find coordinates for zip code: {zip_code}")
+#         return None, None
 
-# Apply function to dataframe to get coordinates
-df_zip['Latitude'], df_zip['Longitude'] = zip(*df_zip['ZIP'].apply(get_coordinates))
+# # Apply function to dataframe to get coordinates
+# df_zip['Latitude'], df_zip['Longitude'] = zip(*df_zip['ZIP'].apply(get_coordinates))
 
-# Filter out rows with NaN coordinates
-df_zip = df_zip.dropna(subset=['Latitude', 'Longitude'])
-# print(df_zip.head())
-# print(df_zip[['Zip Code', 'Latitude', 'Longitude']].head())
-# print(df_zip.isnull().sum())
+# # Filter out rows with NaN coordinates
+# df_zip = df_zip.dropna(subset=['Latitude', 'Longitude'])
+# # print(df_zip.head())
+# # print(df_zip[['Zip Code', 'Latitude', 'Longitude']].head())
+# # print(df_zip.isnull().sum())
 
-# instantiate a feature group for the incidents in the dataframe
-incidents = folium.map.FeatureGroup()
+# # instantiate a feature group for the incidents in the dataframe
+# incidents = folium.map.FeatureGroup()
 
-for index, row in df_zip.iterrows():
-    lat, lng = row['Latitude'], row['Longitude']
+# for index, row in df_zip.iterrows():
+#     lat, lng = row['Latitude'], row['Longitude']
 
-    if pd.notna(lat) and pd.notna(lng):  
-        incidents.add_child(# Check if both latitude and longitude are not NaN
-        folium.vector_layers.CircleMarker(
-            location=[lat, lng],
-            radius=row['Residents'] * 1.2,  # Adjust the multiplication factor to scale the circle size as needed,
-            color='blue',
-            fill=True,
-            fill_color='blue',
-            fill_opacity=0.4
-        ))
+#     if pd.notna(lat) and pd.notna(lng):  
+#         incidents.add_child(# Check if both latitude and longitude are not NaN
+#         folium.vector_layers.CircleMarker(
+#             location=[lat, lng],
+#             radius=row['Residents'] * 1.2,  # Adjust the multiplication factor to scale the circle size as needed,
+#             color='blue',
+#             fill=True,
+#             fill_color='blue',
+#             fill_opacity=0.4
+#         ))
 
-# add pop-up text to each marker on the map
-latitudes = list(df_zip['Latitude'])
-longitudes = list(df_zip['Longitude'])
+# # add pop-up text to each marker on the map
+# latitudes = list(df_zip['Latitude'])
+# longitudes = list(df_zip['Longitude'])
 
-# labels = list(df_zip[['Zip Code', 'Residents_In_Zip_Code']])
-labels = df_zip.apply(lambda row: f"ZIP {row['ZIP']}, Patients: {row['Residents']}", axis=1)
+# # labels = list(df_zip[['Zip Code', 'Residents_In_Zip_Code']])
+# labels = df_zip.apply(lambda row: f"ZIP {row['ZIP']}, Patients: {row['Residents']}", axis=1)
 
-for lat, lng, label in zip(latitudes, longitudes, labels):
-    if pd.notna(lat) and pd.notna(lng):
-        folium.Marker([lat, lng], popup=label).add_to(m)
+# for lat, lng, label in zip(latitudes, longitudes, labels):
+#     if pd.notna(lat) and pd.notna(lng):
+#         folium.Marker([lat, lng], popup=label).add_to(m)
  
-formatter = "function(num) {return L.Util.formatNum(num, 5);};"
-mouse_position = MousePosition(
-    position='topright',
-    separator=' Long: ',
-    empty_string='NaN',
-    lng_first=False,
-    num_digits=20,
-    prefix='Lat:',
-    lat_formatter=formatter,
-    lng_formatter=formatter,
-)
+# formatter = "function(num) {return L.Util.formatNum(num, 5);};"
+# mouse_position = MousePosition(
+#     position='topright',
+#     separator=' Long: ',
+#     empty_string='NaN',
+#     lng_first=False,
+#     num_digits=20,
+#     prefix='Lat:',
+#     lat_formatter=formatter,
+#     lng_formatter=formatter,
+# )
 
-m.add_child(mouse_position)
+# m.add_child(mouse_position)
 
-# add incidents to map
-m.add_child(incidents)
+# # add incidents to map
+# m.add_child(incidents)
 
-map_path = 'zip_code_map.html'
-map_file = os.path.join(script_dir, map_path)
-m.save(map_file)
-map_html = open(map_file, 'r').read()
+# map_path = 'zip_code_map.html'
+# map_file = os.path.join(script_dir, map_path)
+# m.save(map_file)
+# map_html = open(map_file, 'r').read()
 
 # ========================== DataFrame Table ========================== #
 
@@ -2003,14 +2003,14 @@ app.layout = html.Div(
                 f'BMHC Client Navigation Report {current_quarter} 2025', 
                 className='title'),
             html.H1(
-                '01/01/2025 - 3/31/2025', 
+                '04/01/2025 - 6/30/2025', 
                 className='title2'),
             html.Div(
                 className='btn-box', 
                 children=[
                     html.A(
                         'Repo',
-                        href=f'https://github.com/CxLos/BMHC_{current_quarter}_2025_Responses',
+                        href=f'https://github.com/CxLos/Nav_{current_quarter}_2025_Responses',
                         className='btn'),
                 ]),
     ]),  
@@ -2435,7 +2435,7 @@ html.Div(
                 html.Iframe(
                     className='folium',
                     id='folium-map',
-                    srcDoc=map_html
+                    # srcDoc=map_html
                     # style={'border': 'none', 'width': '80%', 'height': '800px'}
                 )
             ]
