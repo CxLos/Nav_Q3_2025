@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 from geopy.geocoders import Nominatim
 from folium.plugins import MousePosition
 import plotly.express as px
+from collections import Counter
 from datetime import datetime, timedelta
 import folium
 import os
@@ -65,16 +66,16 @@ data = pd.DataFrame(worksheet.get_all_records())
 df = data.copy()
 
 # Get the reporting month:
-current_month = datetime(2025, 3, 1).strftime("%B")
+current_month = datetime(2025, 6, 1).strftime("%B")
 
 # get the reporting year:  
-report_year = datetime(2025, 3, 1).year
+report_year = datetime(2025, 6, 1).year
 
 df.columns = df.columns.str.strip()
 
 # Filtered df where 'Date of Activity:' is between 2025-01-01 and 2025-03-31
 df['Date of Activity'] = pd.to_datetime(df['Date of Activity'], errors='coerce')
-df = df[(df['Date of Activity'] >= '2025-1-01') & (df['Date of Activity'] <= '2025-3-31')]
+df = df[(df['Date of Activity'] >= '2025-4-01') & (df['Date of Activity'] <= '2025-6-30')]
 df['Month'] = df['Date of Activity'].dt.month_name()
 
 df_1 = df[df['Month'] == 'January']
@@ -198,7 +199,7 @@ def get_custom_quarter(date_obj):
         return "Q4"  # July–September
 
 # Reporting Quarter (use last month of the quarter)
-report_date = datetime(2025, 3, 1)  # Example report date for Q2 (Jan–Mar)
+report_date = datetime(2025, 6, 1)  # Example report date for Q2 (Jan–Mar)
 month = report_date.month
 report_year = report_date.year
 current_quarter = get_custom_quarter(report_date)
@@ -345,8 +346,8 @@ client_pie = px.pie(
 ).update_traces(
     rotation=180,  # Rotate pie chart 90 degrees counterclockwise
     textfont=dict(size=19),  # Increase text size in each bar
-    textinfo='value+percent',
-    # texttemplate='<br>%{percent:.0%}',  # Format percentage as whole numbers
+    # textinfo='value+percent',
+    texttemplate='%{value}<br>(%{percent:.0%})',
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
 
@@ -438,12 +439,12 @@ travel_fig = px.bar(
     textangle=0,
     hovertemplate='<b>Month</b>: %{label}<br><b>Travel Time</b>: %{y} hours<extra></extra>',
 ).add_annotation(
-    x='January',  # Specify the x-axis value
-    y=df_nav_hours.loc[df_nav_hours['Month'] == 'January', 'Minutes'].values[0] - 10,  # Position slightly above the bar
-    text='No data',  # Annotation text
-    showarrow=False,  # Hide the arrow
-    font=dict(size=30, color='red'),  # Customize font size and color
-    align='center',  # Center-align the text
+    # x='January',  # Specify the x-axis value
+    # # y=df_nav_hours.loc[df_nav_hours['Month'] == 'January', 'Minutes'].values[0] - 10,  # Position slightly above the bar
+    # text='No data',  # Annotation text
+    # showarrow=False,  # Hide the arrow
+    # font=dict(size=30, color='red'),  # Customize font size and color
+    # align='center',  # Center-align the text
 )
 
 # Pie chart
@@ -467,7 +468,8 @@ travel_pie = px.pie(
 ).update_traces(
     rotation=180,
     textfont=dict(size=19),
-    textinfo='value+percent',
+    # textinfo='value+percent',
+    texttemplate='%{value}<br>(%{percent:.0%})',
     hovertemplate='<b>%{label}</b>: %{value} hours<extra></extra>'
 )
 
@@ -581,7 +583,7 @@ status_pie = px.pie(
     textinfo='percent+value',
     insidetextorientation='horizontal',  # Force text labels to be horizontal
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>',
-    texttemplate='<br>%{value}<br>%{customdata:.0f}%',  # Using manually calculated percentage
+    texttemplate='<br>%{value}<br>(%{customdata:.0f}%)', 
     customdata=df_status['Percentage']  # Pass calculated percentage as custom data
 )
 
@@ -592,7 +594,7 @@ def random_date(start, end):
     return start + timedelta(days=np.random.randint(0, (end - start).days))
 
 start_date = datetime(1950, 1, 1) # Example: start date, e.g., 1950-01-01
-end_date = datetime(2000, 12, 31)
+end_date = datetime(2030, 12, 31)
 
 # Convert 'Individual's Date of Birth:' to datetime, coercing errors to NaT
 df['Individual\'s Date of Birth:'] = pd.to_datetime(df['Individual\'s Date of Birth:'], errors='coerce')
@@ -636,7 +638,7 @@ df['Age_Group'] = df['Client Age'].apply(categorize_age)
 df['Month'] = df['Date of Activity'].dt.month_name()
 
 # Filter for October, November, December
-df_q_age = df[df['Month'].isin(['January', 'February', 'March'])]
+df_q_age = df[df['Month'].isin(['April', 'May', 'June'])]
 
 # Group data by Month and Age Group
 df_age_counts = (
@@ -646,7 +648,7 @@ df_age_counts = (
 )
 
 # Sort months and age groups
-month_order = ['January', 'February', 'March']
+month_order = ['April', 'May', 'Juned']
 
 age_order = [
     '10-19', 
@@ -662,11 +664,18 @@ age_order = [
 df_age_counts['Month'] = pd.Categorical(df_age_counts['Month'], categories=months_in_quarter, ordered=True)
 df_age_counts['Age_Group'] = pd.Categorical(df_age_counts['Age_Group'], categories=age_order, ordered=True)
 
+# print(df_age_counts.value_counts())
+
+# Group by 'Age_Group' and count the number of patient visits
+df_decades = df.groupby('Age_Group', observed=True).size().reset_index(name='Patient_Visits')
+df_decades['Age_Group'] = pd.Categorical(df_decades['Age_Group'], categories=age_order, ordered=True)
+df_decades = df_decades.sort_values('Age_Group')
 # print(df_decades.value_counts())
 
 # Create the grouped bar chart
 age_fig = px.bar(
     df_age_counts,
+    # df_decades,
     x='Month',
     y='Patient_Visits',
     color='Age_Group',
@@ -736,11 +745,6 @@ age_fig = px.bar(
     line_width=2
 )
 
-# Group by 'Age_Group' and count the number of patient visits
-df_decades = df.groupby('Age_Group', observed=True).size().reset_index(name='Patient_Visits')
-df_decades['Age_Group'] = pd.Categorical(df_decades['Age_Group'], categories=age_order, ordered=True)
-df_decades = df_decades.sort_values('Age_Group')
-
 # Age_Group Pie chart:
 age_pie = px.pie(
     df_decades,
@@ -760,7 +764,8 @@ age_pie = px.pie(
     ),  # Center-align the title
 ).update_traces(
     textfont=dict(size=19),  # Increase text size in each bar
-    textinfo='value+percent',
+    # textinfo='value+percent',
+    texttemplate='%{value}<br>(%{percent:.1%})',
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
 
@@ -904,7 +909,8 @@ gender_pie = px.pie(
     ),
     margin=dict(t=90, r=0, b=0, l=0),
 ).update_traces(
-    textinfo='percent+value',
+    # textinfo='percent+value',
+    texttemplate='%{value}<br>(%{percent:.0%})',
     insidetextorientation='horizontal',  # Force text labels to be horizontal
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>',
 )
@@ -1056,7 +1062,7 @@ race_pie = px.pie(
     textinfo='percent+value',
     insidetextorientation='horizontal',  # Force text labels to be horizontal
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>',
-    texttemplate='%{value}<br>%{customdata:.0f}%',  # Using manually calculated percentage
+    texttemplate='%{value}<br>(%{customdata:.0f}%)',  # Using manually calculated percentage
     customdata=df_race['Percentage']  # Pass calculated percentage as custom data
 )
 
@@ -1065,31 +1071,110 @@ race_pie = px.pie(
 # print("Support Unique Before: \n", df['Support'].unique().tolist())
 
 support_unique = [
-    
+    'Specialty Care Referral', 'Primary Care Appointment', 'Permanent Support Housing', 'MAP Application', 'Social Determinant of Health Referral', 'Primary Care Referral', 'Behavioral Health Referral', 'Behavioral Health Appointment', 'MAP Application, Primary Care Appointment', 'Specialty Care Referral, Permanent Support Housing', 'Social Determinant of Health Referral, Re-Entry', 'Syayus of map application and scheduling appointment ', 'Permanent Support Housing, Primary Care Appointment, homeless resources', 'Behavioral Health Appointment, Primary Care Appointment, Specialty Care Referral', 'Permanent Support Housing, I have hard copies of votal docs. Searching for client thru outreach ', 'Behavioral Health Appointment, Permanent Support Housing, Primary Care Appointment, Social Determinant of Health Referral', 'Primary Care Appointment, Specialty Care Referral', 'Permanent Support Housing, Client Search and Outreach ', 'Permanent Support Housing, Searching for clients assigned ', 'Behavioral Health Referral, MAP Application, Permanent Support Housing, Primary Care Appointment, Primary Care Referral, Specialty Care Referral, Social Determinant of Health Referral, coordinated assessment with Sunrise', 'primary care appointment', 'Behavioral Health Appointment, Behavioral Health Referral, MAP Application, Permanent Support Housing, Primary Care Appointment', 'Behavioral Health Appointment, Behavioral Health Referral, MAP Application, Permanent Support Housing', 'Outreach search last known place ', 'MAP Application, ', 'Behavioral Health Referral, Permanent Support Housing, Primary Care Referral', 'Primary Care Appointment, Food bank', 'Behavioral Health Appointment, MAP Application, Primary Care Appointment, Specialty Care Referral', 'MAP Application, set an appointment for Financial Screening', 'Permanent Support Housing, Transitional housing', 'Primary Care Appointment, Social Determinant of Health Referral, Walk in coordination', 'Permanent Support Housing, ', 'coordination', 'Behavioral Health Appointment, MAP Application, Primary Care Appointment, Ashley', 'weekly updates, plus was able to schedule a social security and ID appointment for client to get ID', 'Primary Care Appointment, Pediatric Doctor', 'Behavioral Health Appointment, Primary Care Appointment', 'Rehabilitation crae', 'counselor Dr Clark', 'MAP Application, Primary Care Referral, Coordinated Dental ', 'MAP Application, Coordinated to a OBGYN', 'MAP Application, Primary Care Appointment, ', 'Behavioral Health Appointment, Primary Care Appointment, Housing', 'FILLED DOCUMENTS', 'Specialty Care Referral, referral check up', 'Primary Care Appointment, Counseling prefer male counselor', 'Behavioral Health Appointment, Primary Care Referral', 'coordination ', 'Primary Care Appointment, Transfer', 'Financial Screen ', 'Behavioral Health Appointment, MAP Application', 'Behavioral Health Appointment, Dr Clark Counselor ', 'Behavioral Health Appointment, Behavioral Health Referral, MAP Application, Primary Care Appointment, Specialty Care Referral, Social Determinant of Health Referral', 'Dropping documents and Clinical question', 'Behavioral Health Referral, Primary Care Referral', 'schedule for Financial Screening', 'REFILL MEDS', 'speak with the nurse', 'Transportation coordination'
 ]
 
-df['Support'] = (
-    df['Support']
+support_after = [
+    'Specialty Care Referral', 'Primary Care Appointment', 'Permanent Support Housing', 'Map Application', 'Social Determinant Of Health Referral', 'Primary Care Referral', 'Behavioral Health Referral', 'Behavioral Health Appointment', 'Re-Entry', 'Syayus Of Map Application And Scheduling Appointment', 'Homeless Resources', 'I Have Hard Copies Of Votal Docs. Searching For Client Thru Outreach', 'Client Search And Outreach', 'Searching For Clients Assigned', 'Coordinated Assessment With Sunrise', 'Outreach Search Last Known Place', 'Food Bank', 'Set An Appointment For Financial Screening', 'Transitional Housing', 'Walk In Coordination', 'Coordination', 'Ashley', 'Weekly Updates', 'Plus Was Able To Schedule A Social Security And Id Appointment For Client To Get Id', 'Pediatric Doctor', 'Rehabilitation Crae', 'Counselor Dr Clark', 'Coordinated Dental', 'Coordinated To A Obgyn', 'Housing', 'Filled Documents', 'Referral Check Up', 'Counseling Prefer Male Counselor', 'Transfer', 'Financial Screen', 'Dr Clark Counselor', 'Dropping Documents And Clinical Question', 'Schedule For Financial Screening', 'Refill Meds', 'Speak With The Nurse', 'Transportation Coordination'
+]
+
+support_categories = [
+    "Behavioral Health Appointment",
+    "Behavioral Health Referral",
+    "MAP Application",
+    "Permanent Support Housing",
+    "Primary Care Appointment",
+    "Primary Care Referral",
+    "Specialty Care Referral",
+    "Social Determinant of Health Referral"
+]
+
+# Step 1: Split comma-separated support entries into lists
+df_expanded = df.copy()
+df_expanded['Support'] = df_expanded['Support'].str.split(',')
+
+# Step 2: Explode list so each support type is a new row
+df_expanded = df_expanded.explode('Support')
+
+# Step 3: Clean up whitespace and remove blanks/NAs
+df_expanded['Support'] = df_expanded['Support'].str.strip()
+df_expanded = df_expanded[
+    df_expanded['Support'].str.lower().notna() &
+    (df_expanded['Support'].str.lower() != 'n/a') &
+    (df_expanded['Support'] != '')
+]
+
+# Optional: standardize capitalization (optional)
+df_expanded['Support'] = df_expanded['Support'].str.title()
+
+df_expanded['Support'] = (
+    df_expanded['Support']
     .astype(str)
     .str.strip()
     .replace({
-        "" : pd.NA,
+        'Specialty Care Referral': 'Specialty Care Referral',
+        'Primary Care Appointment': 'Primary Care Appointment',
+        'Permanent Support Housing': 'Permanent Support Housing',
+        'Map Application': 'MAP Application',
+        'Social Determinant Of Health Referral': 'Social Determinant of Health Referral',
+        'Primary Care Referral': 'Primary Care Referral',
+        'Behavioral Health Referral': 'Behavioral Health Referral',
+        'Behavioral Health Appointment': 'Behavioral Health Appointment',
+        'Re-Entry': 'Social Determinant of Health Referral',  # often grouped with SDOH
+        'Syayus Of Map Application And Scheduling Appointment': 'MAP Application',
+        'Homeless Resources': 'Permanent Support Housing',
+        'I Have Hard Copies Of Votal Docs. Searching For Client Thru Outreach': 'Permanent Support Housing',
+        'Client Search And Outreach': 'Permanent Support Housing',
+        'Searching For Clients Assigned': 'Permanent Support Housing',
+        'Coordinated Assessment With Sunrise': 'Social Determinant of Health Referral',
+        'Outreach Search Last Known Place': 'Permanent Support Housing',
+        'Food Bank': 'Social Determinant of Health Referral',
+        'Set An Appointment For Financial Screening': 'MAP Application',
+        'Transitional Housing': 'Permanent Support Housing',
+        'Walk In Coordination': 'Social Determinant of Health Referral',
+        'Coordination': 'Social Determinant of Health Referral',
+        'Ashley': pd.NA,
+        'Weekly Updates': pd.NA,
+        'Plus Was Able To Schedule A Social Security And Id Appointment For Client To Get Id': 'Social Determinant of Health Referral',
+        'Pediatric Doctor': 'Primary Care Appointment',
+        'Rehabilitation Crae': 'Behavioral Health Referral',
+        'Counselor Dr Clark': 'Behavioral Health Referral',
+        'Coordinated Dental': 'Primary Care Referral',
+        'Coordinated To A Obgyn': 'Primary Care Referral',
+        'Housing': 'Permanent Support Housing',
+        'Filled Documents': pd.NA,
+        'Referral Check Up': 'Specialty Care Referral',
+        'Counseling Prefer Male Counselor': 'Behavioral Health Appointment',
+        'Transfer': 'Primary Care Appointment',
+        'Financial Screen': 'MAP Application',
+        'Dr Clark Counselor': 'Behavioral Health Referral',
+        'Dropping Documents And Clinical Question': pd.NA,
+        'Schedule For Financial Screening': 'MAP Application',
+        'Refill Meds': pd.NA,
+        'Speak With The Nurse': pd.NA,
+        'Transportation Coordination': 'Social Determinant of Health Referral'
     })
-    )
+)
 
-# Group the data by 'Month' and 'Type of support given:' to count occurrences
+# print("Support Unique After: \n", df_expanded['Support'].unique().tolist())
+
+# Step 4: Count by Month and Support
 df_support_counts = (
-    df.groupby(['Month', 'Support'],sort=False)
+    df_expanded
+    .groupby(['Month', 'Support'], sort=False)
     .size()
     .reset_index(name='Count')
 )
 
-# print("Support Unique After: \n", df['Support'].unique().tolist())
-
+# Step 5: Sort months properly
 df_support_counts['Month'] = pd.Categorical(
-    df_support_counts['Month'], 
-    categories = months_in_quarter, 
-    ordered=True)
+    df_support_counts['Month'],
+    categories=months_in_quarter,
+    ordered=True
+)
+
+# Final sort (optional)
+df_support_counts = df_support_counts.sort_values(by=['Month', 'Count'], ascending=[True, False])
 
 # print(df_support_counts)
 
@@ -1176,7 +1261,7 @@ df_support = df['Support'].value_counts().reset_index(name='Count')
 
 #  Pie chart:
 support_pie = px.pie(
-    df_support,
+    df_support_counts,
     names='Support',
     values='Count',
     color='Support',
@@ -1195,7 +1280,9 @@ support_pie = px.pie(
 ).update_traces(
     rotation = 90,
     textfont=dict(size=19),  # Increase text size in each bar
-    textinfo='value+percent',
+    # textinfo='value+percent',
+    texttemplate='%{percent:.2%}',
+    # texttemplate='%{value}<br>(%{percent:.2%})',
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
 
@@ -1221,8 +1308,12 @@ df['Insurance'] = (df['Insurance']
       .astype(str)
         .str.strip()
         .replace({
+            "" : "Unknown",
             'MAP 000' : "MAP 100",
             'Did not disclose.' : "NONE",
+            'None' : "NONE",
+            '30 DAY 100' : "30 Day 100",
+            'Just got it!!!' : "Unknown",
         })
       )
 
@@ -1335,10 +1426,11 @@ insurance_pie = px.pie(
     ),  
     margin=dict(l=0, r=0, t=50, b=0)
 ).update_traces(
-    rotation=180,  
+    rotation=130,  
     textfont=dict(size=19), 
     insidetextorientation='horizontal', 
-    textinfo='percent+value',
+    # textinfo='percent+value',
+    texttemplate='%{value}<br>(%{percent:.2%})',
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
 
@@ -1347,83 +1439,188 @@ insurance_pie = px.pie(
 # print("Location Unique Before:", df['Location'].unique().tolist())
 
 location_unique = [
-    "Black Men's Health Clinic", 'Downtown Austin Community Court', 'Cross Creek Hospital', 'South Bridge', 'The Bumgalows', 'Office (remote) ', 'The Bungalows', 'Extended Stay America (Host Hotel) ', 'last known area was St. John. Connected with Hungry Hill to help me search for client ', 'PHONE CONTACT', 'PHONE', 'BMHC', 'GudLife', 'phone ', 'Home of resident', 'Community First Village', 'Cross Creek hospital', 'over phone', 'phone', 'phone call', 'over the phone', 'Hungry Hill/Austin Urban League', 'Cross creek hospital', 'Vivent Health', 'Clients home', 'Extended Stay America ', 'Outreach in the field ', 'Integral Care St. John Office ', 'Extended Stay America Hotel ', 'Outreach ', 'picked client up from encampment for SSA appointment'
+    "Black Men's Health Clinic", 'South Bridge', 'over the phone', 'Terrezas public Library', 'Terreaz Public Library', 'Social Security Administration office', 'over phone', 'Community First Village', 'Round Rock library', 'EXTENDED STAY AMERICA ', 'Phone call', 'Social Security office', 'Vivent Health', 'Pflugerville library /on the phone after leaving client', 'GudLife', 'out in field', 'integral Care- St. John Location ', 'Extended Stay America', 'Housing Authority of Travis County', 'ICare and social security office', 'Phone appt ', 'Hybrid Meeting ', 'Social Security Office', 'Pflugerville library/Phone call', 'phone call/Integral care St John location', 'Bungalows', 'Sunrise Navigation Homeless Center', 'capital villas apartments', 'Deep in the trenches', 'met client at southbridge to complete check in and discussed what options we had for us to be able to obtain missing vital docs', 'Cross Creek Hospital', 'picking client up from encampment, vital statics appointment and walk in at social security office, then returning client back to encampment area ', 'Austin Transitional Center', 'Austin transitional Center', 'Austin Transistional Center', 'Austin Transitional center', 'ATC', 'Transitions of Care', 'via zoom', 'Phone call and visit to 290/35 area where unhoused', 'Cenikor Austin', 'social security office and DPS (NORTH LAMAR)', 'DPS Meeting (pflugerville locations)', 'Terrazas Branch Library ', 'Trinity Center ', 'Nice project riverside and Montopolis', 'Downtown Austin Community Court', 'Integral Care - St. John', 'Terrazas Library ', 'ESPERO', 'Event', 'St. John’s Health Fair', 'Terrazas library ', 'Community Outreach', 'Austin Library '
 ]
 
-df['Location'] = (
-    df['Location']
-    .astype(str)
-    .str.strip()
+location_categories = [
+    "Black Men's Health Clinic",
+    'SouthBridge',
+    'Phone',
+    'Terrezas Public Library',
+    'Community First Village',
+    'Round Rock Library',
+    'Extended Stay America',
+    'Social Security Office',
+    'Vivent Health',
+    'Pflugerville Library',
+    'GudLife',
+    'Out In Field',
+    'Integral Care - St. Johns',
+    'Housing Authority Of Travis County',
+    'Icare',
+    'Bungalows',
+    'Sunrise Navigation Homeless Center',
+    'Capital Villas Apartments',
+    'Deep In The Trenches',
+    'Cross Creek Hospital',
+    'Encampment',
+    'Austin Transitional Center',
+    'Transitions Of Care',
+    'Virtual Meeting',
+    'Cenikor',
+    'DPS North Lamar',
+    'DPS Pflugerville',
+    'Trinity Center',
+    'Nice Project',
+    'Downtown Austin Community Court',
+    'Espero',
+    'Event',
+    'St. John’S Health Fair',
+    'Austin Public Library'
+]
+
+# Step 1: Split comma-separated location entries into lists (if applicable)
+df_expanded_loc = df.copy()
+df_expanded_loc['Location'] = df_expanded_loc['Location'].astype(str).str.split(',')
+
+# Step 2: Explode list so each location is a new row
+# The code `df_expanded_loc = df_expanded_loc.explode('Location')` is exploding the 'Location' column
+# in the DataFrame `df_expanded_loc`. This means that if a cell in the 'Location' column contains a
+# list or array of values, the explode function will create a new row for each value in that list,
+# effectively expanding the DataFrame.
+df_expanded_loc = df_expanded_loc.explode('Location')
+
+# Step 3: Clean up whitespace and remove blanks/NAs
+df_expanded_loc['Location'] = df_expanded_loc['Location'].str.strip()
+df_expanded_loc = df_expanded_loc[
+    df_expanded_loc['Location'].str.lower().notna() &
+    (df_expanded_loc['Location'].str.lower() != 'n/a') &
+    (df_expanded_loc['Location'] != '')
+]
+
+df_expanded_loc['Location'] = (
+    df_expanded_loc['Location']
+    .str.title()
     .replace({
-        '' : pd.NA,
-        'BMHC': "Black Men's Health Clinic",
-        "Black Men's Health Clinic": "Black Men's Health Clinic",
-        
-        'Downtown Austin Community Court': 'Downtown Austin Community Court',
-        
-        'Cross Creek Hospital': 'Cross Creek Hospital',
-        'Cross creek hospital': 'Cross Creek Hospital',
-        'Cross Creek hospital': 'Cross Creek Hospital',
-        
-        'South Bridge': 'SouthBridge',
+        "Black Men'S Health Clinic": "Black Men's Health Clinic",
+
         'Southbridge': 'SouthBridge',
-        
-        'The Bumgalows': 'The Bungalows',
-        'The Bungalows': 'The Bungalows',
-        
-        'Office (remote)': 'Remote Office',
-        
-        'Extended Stay America (Host Hotel)': 'Extended Stay America',
-        'Extended Stay America Hotel': 'Extended Stay America',
-        'Extended Stay America': 'Extended Stay America',
-        
-        'last known area was St. John. Connected with Hungry Hill to help me search for client': 'Field Outreach - St. John Area',
-        'picked client up from encampment for SSA appointment': 'Field Outreach - SSA Pickup',
-        'Outreach in the field': 'Field Outreach',
-        'Outreach': 'Field Outreach',
-        
-        'PHONE CONTACT': 'Phone',
-        'PHONE': 'Phone',
-        'phone': 'Phone',
-        'phone ': 'Phone',
-        'phone call': 'Phone',
-        'over phone': 'Phone',
-        'over the phone': 'Phone',
-        
-        'Home of resident': 'Client Home',
-        'Clients home': 'Client Home',
-        
-        'GudLife': 'GudLife',
-        'Vivent Health': 'Vivent Health',
-        
+        'South Bridge': 'SouthBridge',
+
+        'Phone': 'Phone',
+        'Phone Appt': 'Phone',
+        'Phone Call': 'Phone',
+        'Phone Contact': 'Phone',
+        'Over Phone': 'Phone',
+        'Over The Phone': 'Phone',
+        'Called Client': 'Phone',
+        'Telehealth': 'Phone',
+        'Phone Call/Integral Care St John Location': 'Phone',  # prioritizing phone
+        'Pflugerville Library/Phone Call': 'Phone',
+
+        'Terrezas Public Library': 'Terrezas Public Library',
+        'Terreaz Public Library': 'Terrezas Public Library',
+        'Terrazas Branch Library': 'Terrezas Public Library',
+        'Terrazas Library': 'Terrezas Public Library',
+
+        'Social Security Administration Office': 'Social Security Office',
+        'Social Security Office': 'Social Security Office',
+        'Social Security Office And Dps (North Lamar)': 'DPS North Lamar',
+        'Vital Statics Appointment And Walk In At Social Security Office': 'Social Security Office',
+        'Icare And Social Security Office': 'Icare',
+
         'Community First Village': 'Community First Village',
-        'CFV': 'Community First Village',
-        
-        'Hungry Hill/Austin Urban League': 'Hungry Hill / Austin Urban League',
-        
-        'Integral Care St. John Office': 'Integral Care - St. John',
+
+        'Round Rock Library': 'Round Rock Library',
+
+        'Extended Stay America': 'Extended Stay America',
+
+        'Vivent Health': 'Vivent Health',
+
+        'Pflugerville Library /On The Phone After Leaving Client': 'Pflugerville Library',
+
+        'Gudlife': 'GudLife',
+        'GudLife': 'GudLife',
+
+        'Out In Field': 'Out In Field',
+        'Picking Client Up From Encampment': 'Encampment',
+        'Then Returning Client Back To Encampment Area': 'Encampment',
+        'Phone Call And Visit To 290/35 Area Where Unhoused': 'Encampment',
+
+        'Integral Care- St. John Location': 'Integral Care - St. Johns',
+        'Integral Care - St. John': 'Integral Care - St. Johns',
+
+        'Housing Authority Of Travis County': 'Housing Authority Of Travis County',
+
+        'Icare': 'Icare',
+
+        'Hybrid Meeting': 'Virtual Meeting',
+        'Via Zoom': 'Virtual Meeting',
+
+        'Bungalows': 'Bungalows',
+
+        'Sunrise Navigation Homeless Center': 'Sunrise Navigation Homeless Center',
+
+        'Capital Villas Apartments': 'Capital Villas Apartments',
+
+        'Deep In The Trenches': 'Deep In The Trenches',
+
+        'Met Client At Southbridge To Complete Check In And Discussed What Options We Had For Us To Be Able To Obtain Missing Vital Docs': 'SouthBridge',
+
+        'Cross Creek Hospital': 'Cross Creek Hospital',
+
+        'Austin Transitional Center': 'Austin Transitional Center',
+        'Austin Transistional Center': 'Austin Transitional Center',
+        'Atc': 'Austin Transitional Center',
+
+        'Transitions Of Care': 'Transitions Of Care',
+
+        'Cenikor Austin': 'Cenikor',
+
+        'Dps Meeting (Pflugerville Locations)': 'DPS Pflugerville',
+
+        'Trinity Center': 'Trinity Center',
+
+        'Nice Project Riverside And Montopolis': 'Nice Project',
+
+        'Downtown Austin Community Court': 'Downtown Austin Community Court',
+
+        'Espero': 'Espero',
+
+        'Event': 'Event',
+
+        'St. John’S Health Fair': 'St. John’S Health Fair',
+
+        'Community Outreach': 'Event',  # grouped with other events
+
+        'Austin Library': 'Austin Public Library',
     })
 )
 
 
-# print("Location Unique After:", df['Location'].unique().tolist())
+location_unexpected = df_expanded_loc[~df_expanded_loc['Location'].isin(location_categories)]
+# print("Location Unexpected: \n", df_expanded_loc['Location'].unique().tolist())
 
-# Group data by Month and Location Encountered
+# print("Location Unique After:", df_expanded_loc['Location'].unique().tolist())
+
+# Step 5: Count by Month and Location
 df_location_counts = (
-    df.groupby(['Month', 'Location'], 
-    sort=False) # Do not sort the groups
-    .size() # Count the number of occurrences
-    .reset_index(name='Count') # Reset the index and rename the count column
+    df_expanded_loc
+    .groupby(['Month', 'Location'], sort=False)
+    .size()
+    .reset_index(name='Count')
 )
 
-# print("Location Unique After:", df['Location'].unique().tolist())
-
+# Step 6: Sort months properly
 df_location_counts['Month'] = pd.Categorical(
-    df_location_counts['Month'], # Categorize the months for sorting purposes and to avoid alphabetical sorting.
-    categories=months_in_quarter, # Specify the order of the categories
-    ordered=True) # Ensure the categories are ordered
+    df_location_counts['Month'],
+    categories=months_in_quarter,
+    ordered=True
+)
 
-df_location_counts = df_location_counts.sort_values(['Month', 'Location'])
+# Step 7: Optional final sort
+df_location_counts = df_location_counts.sort_values(by=['Month', 'Count'], ascending=[True, False])
+
 
 # Create the grouped bar chart
 location_fig = px.bar(
@@ -1510,11 +1707,11 @@ df_location = df['Location'].value_counts().reset_index(name='Count')
 
 #  Pie chart:
 location_pie = px.pie(
-    df_location,
+    df_location_counts,
     names='Location',
     values='Count',
     color='Location',
-    height=800
+    height=900
 ).update_layout(
     title=dict(
         x=0.5,
@@ -1527,66 +1724,60 @@ location_pie = px.pie(
     ),
     margin=dict(l=0, r=0, t=50, b=0)
 ).update_traces(
-    rotation=0,
-    textfont=dict(size=19),  # Increase text size in each bar
+    rotation=70,
+    textfont=dict(size=12),  # Increase text size in each bar
     textinfo='percent',
     # textinfo=None,
-    # texttemplate='%{value}<br>%{percent:.1%}', 
+    texttemplate='%{value}<br>(%{percent:.1%})',
     # insidetextorientation='horizontal',  # Force text labels to be horizontal
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
 
 # --------------------- Person Filling Out This Form DF -------------------- #
 
-person_unique = [
-    'Viviana Varela', 
-    'Jaqueline Oviedo',
-    'Michael Lambert', 
-    'Michael Lambert ', 
-    'Larry Wallace Jr',
-    'Rishit Yokananth', 
-    'Dominique Street', 
-    'Dr Larry Wallace Jr',
-    'Eric Roberts', 
-    'The Bumgalows', 
-    'Kimberly Holiday', 
-    'Toya Craney',
-    'Sonya Hosey',
-    'Eric roberts', 
-    'EricRoberts'
-]
+# Step 1: Split comma-separated person entries into lists
+df_expanded_person = df.copy()
+df_expanded_person['Person'] = df_expanded_person['Person'].astype(str).str.split(',')
 
-# print("Person Unique Before:", df["Person"].unique().tolist())
+# Step 2: Explode the list so each person is in its own row
+df_expanded_person = df_expanded_person.explode('Person')
 
-df['Person'] = (
-    df['Person']
-        .astype(str)
-        .str.strip()
-        .replace({
-            '' : pd.NA,
-            'Dominique': 'Dominique Street',
-            'Jaqueline Ovieod': 'Jaqueline Oviedo',
-            'Sonya': 'Sonya Hosey',
-            'EricRoberts': 'Eric Roberts',
-            'Eric roberts': 'Eric Roberts',
-            'Larry Wallace Jr': 'Dr Larry Wallace Jr',
-        })
+# Step 3: Clean up whitespace and normalize known name variations
+df_expanded_person['Person'] = (
+    df_expanded_person['Person']
+    .str.strip()
+    .replace({
+        '': pd.NA,
+        'Dominique': 'Dominique Street',
+        'Jaqueline Ovieod': 'Jaqueline Oviedo',
+        'Sonya': 'Sonya Hosey',
+        'EricRoberts': 'Eric Roberts',
+        'Eric roberts': 'Eric Roberts',
+        'Larry Wallace Jr': 'Dr Larry Wallace Jr',
+        'Michael Lambert ': 'Michael Lambert',
+    })
 )
 
-# Group data by Month and Person submitting the form
+# Step 4: Drop rows where Person is still missing or blank
+df_expanded_person = df_expanded_person[df_expanded_person['Person'].notna() & (df_expanded_person['Person'] != '')]
+
+# Step 5: Group by Month and Person
 df_person_counts = (
-    df.groupby(['Month', 'Person'], sort=False)
+    df_expanded_person.groupby(['Month', 'Person'], sort=False)
     .size()
     .reset_index(name='Count')
 )
 
+# Step 6: Ensure month sorting is correct
 df_person_counts['Month'] = pd.Categorical(
-    df_person_counts['Month'], 
-    categories=months_in_quarter, 
-    ordered=True)
+    df_person_counts['Month'],
+    categories=months_in_quarter,
+    ordered=True
+)
 
-# Sort the dataframe by 'Month' and 'Person submitting this form:'
-df_person_counts = df_person_counts.sort_values(['Month', 'Person'])
+# Step 7: Final sort
+# df_person_counts = df_person_counts.sort_values(['Month', 'Person'])
+
 
 # Create the grouped bar chart
 person_fig = px.bar(
@@ -1677,7 +1868,7 @@ df_pf = df['Person'].value_counts().reset_index(name='Count')
 
 #  Pie chart:
 pf_pie = px.pie(
-    df_pf,
+    df_person_counts,
     names='Person',
     values='Count',
     color='Person',
@@ -1703,9 +1894,10 @@ pf_pie = px.pie(
     ),
     margin=dict(l=0, r=0, t=50, b=0),
 ).update_traces(
-    rotation=90,
-    textfont=dict(size=19),  # Increase text size in each bar
-    textinfo='value+percent',
+    rotation=110,
+    textfont=dict(size=16),  # Increase text size in each bar
+    # textinfo='value+percent',
+    texttemplate='%{value}<br>(%{percent:.1%})',
     insidetextorientation='horizontal',  # Force text labels to be horizontal
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
@@ -1714,10 +1906,10 @@ pf_pie = px.pie(
 
 df['ZIP2'] = df['ZIP']
 
-# print("ZIP2 Unique Before:", df['ZIP 2'].unique().tolist())
+print("ZIP2 Unique Before:", df['ZIP2'].unique().tolist())
 
 zip_unique =[
-78744, 78640, 78723, '', 78741, 78704, 78753, 78750, 78621, 78758, 78724, 78754, 78721, 78664, 78613, 78759, 78731, 78653, 78702, 78617, 78728, 78660, 78745, 78752, 78748, 78747, 78725, 78661, 78719, 78612, 76513, 78415, 78656, 78618, 'N/A', 78705, 78659, 78756, 78714, 78662, 76537, 78729, 78751, 78245, 78644, 78735, 'Texas', 78610, 78757, 78634, 75223, 'Unhoused', 78717, 'NA', 78749, 78727, 78683, 'Unknown', 'Unknown '
+78753, 78724, 78660, 78721, '', 78723, 78748, 78729, 78744, 78754, 78758, 78653, 78617, 78759, 78664, 'UnKnown', 'Unknown', 'uknown', 'Unknown ', 78727, 78747, 78725, 78752, 78659, 78757, 78745, 78741, 78644, 78616, 78621, 78742, 78704, 78701, 78612, 78640, 78702, 78654, 78628, 78751, 78734, 78746, 78566, 78737, 78633, 78728, 76016, 78626, 78652
 ]
 
 zip2_mode = df['ZIP2'].mode()[0]
@@ -1736,6 +1928,9 @@ df['ZIP2'] = (
         'NA': zip2_mode,
         'N/A': zip2_mode,
         'nan': zip2_mode,
+        'unknown': zip2_mode,
+        'uknown': zip2_mode,
+        'UnKnown': zip2_mode,
     })
 )
 
@@ -1744,12 +1939,18 @@ df_z = df['ZIP2'].value_counts().reset_index(name='Count')
 
 # print("ZIP2 Unique After:", df['ZIP2'].unique().tolist())
 
+# Step 1: Calculate total count
+total = df_z['Count'].sum()
+
+# Step 2: Create formatted text with value and percent
+df_z['text_display'] = df_z['Count'].apply(lambda x: f'{x} ({x / total:.1%})')
+
 zip_fig =px.bar(
     df_z,
     x='Count',
     y='ZIP2',
     color='ZIP2',
-    text='Count',
+    text='text_display',
     orientation='h'  # Horizontal bar chart
 ).update_layout(
     title= f'{current_quarter} Visitors by Zip Code',
@@ -1757,7 +1958,7 @@ zip_fig =px.bar(
     yaxis_title='Zip Code',
     title_x=0.5,
     height=1500,
-    # width=1000,
+    width=1900,
     font=dict(
         family='Calibri',
         size=17,
@@ -1775,7 +1976,7 @@ zip_fig =px.bar(
         yanchor="top"  # Anchor legend at the top
     ),
 ).update_traces(
-    textposition='outside',  # Place text labels inside the bars
+    textposition='auto',  # Place text labels inside the bars
     textfont=dict(size=30),  # Increase text size in each bar
     # insidetextanchor='middle',  # Center text within the bars
     textangle=0,            # Ensure text labels are horizontal
@@ -2421,27 +2622,27 @@ html.Div(
     ]
 ),
 
-html.Div(
-    className='row3',
-    children=[
-        html.Div(
-            # ZIP Code Map
-            className='graph5',
-            children=[
-                html.H1(
-                    'Number of Visitors by Zip Code', 
-                    className='zip'
-                ),
-                html.Iframe(
-                    className='folium',
-                    id='folium-map',
-                    # srcDoc=map_html
-                    # style={'border': 'none', 'width': '80%', 'height': '800px'}
-                )
-            ]
-        )
-    ]
-),
+# html.Div(
+#     className='row3',
+#     children=[
+#         html.Div(
+#             # ZIP Code Map
+#             className='graph5',
+#             children=[
+#                 html.H1(
+#                     'Number of Visitors by Zip Code', 
+#                     className='zip'
+#                 ),
+#                 html.Iframe(
+#                     className='folium',
+#                     id='folium-map',
+#                     srcDoc=map_html
+#                     style={'border': 'none', 'width': '80%', 'height': '800px'}
+#                 )
+#             ]
+#         )
+#     ]
+# ),
 ])
 
 # Callback function
