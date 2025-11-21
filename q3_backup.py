@@ -1,4 +1,3 @@
-
 # =================================== IMPORTS ================================= #
 
 import os
@@ -170,7 +169,7 @@ report_date = datetime(2025, 4, 1)
 month = report_date.month
 report_year = report_date.year
 current_quarter = get_custom_quarter(report_date)
-print(f"Reporting Quarter: {current_quarter}")
+# print(f"Reporting Quarter: {current_quarter}")
 
 # Adjust the quarter calculation for custom quarters
 if month in [10, 11, 12]:
@@ -1185,7 +1184,7 @@ for entry in df['Support']:
 
 df_support = pd.DataFrame(counter.items(), columns=['Support', 'Count']).sort_values(by='Count', ascending=False)
 
-# print(df_support)
+print(df_support)
 
 # Support Bar Chart - Quarterly Format
 support_bar = px.bar(
@@ -1855,7 +1854,7 @@ app.layout = html.Div(
                     'Client Navigation Report', 
                     className='title'),
                 html.H1(
-                    f'{current_quarter} {report_year}', 
+                    f'Q4 {report_year}', 
                     className='title2'),
                 html.Div(
                     className='btn-box', 
