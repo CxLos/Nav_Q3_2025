@@ -160,6 +160,7 @@ df.rename(
         "Individual's Status:": "Status",
         "Gender:": "Gender",
     }, 
+    
 inplace=True)
 
 # Fill Missing Values for df
