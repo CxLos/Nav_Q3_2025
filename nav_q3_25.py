@@ -1136,17 +1136,6 @@ support_categories = [
 # Normalize support_categories (lowercase and stripped for consistency)
 normalized_categories = {cat.lower().strip(): cat for cat in support_categories}
 
-# Debug: Check if Support column exists
-# print(f"\n=== SUPPORT DEBUGGING ===")
-# print(f"DataFrame shape: {df.shape}")
-# print(f"DataFrame columns: {df.columns.tolist()}")
-# print(f"'Support' in columns: {'Support' in df.columns}")
-# print(f"months_in_quarter: {months_in_quarter}")
-# print(f"Unique months in df: {df['Month'].unique()}")
-# if 'Support' in df.columns:
-#     print(f"Support column null count: {df['Support'].isna().sum()}")
-#     print(f"Support column sample values:\n{df['Support'].head(10)}")
-
 # Create monthly support data for quarterly view
 support_monthly_data = []
 
@@ -1155,12 +1144,11 @@ for month in months_in_quarter:
     month_counter = Counter()
     
     for entry in month_df['Support']:
-        if pd.notna(entry):  # Check if entry is not NaN
-            # Split by comma and strip whitespace
-            items = [i.strip() for i in str(entry).split(",")]
-            for item in items:
-                if item:  # Only count non-empty items
-                    month_counter[item] += 1
+        # Split and clean each category
+        items = [i.strip().lower() for i in entry.split(",")]
+        for item in items:
+            if item in normalized_categories:
+                month_counter[normalized_categories[item]] += 1
     
     # Convert to DataFrame and add month column
     for support_type, count in month_counter.items():
@@ -1176,12 +1164,10 @@ df_support_quarterly = pd.DataFrame(support_monthly_data)
 # Overall support data (for pie chart)
 counter = Counter()
 for entry in df['Support']:
-    if pd.notna(entry):  # Check if entry is not NaN
-        # Split by comma and strip whitespace
-        items = [i.strip() for i in entry.split(",")]
-        for item in items:
-            if item:  # Only count non-empty items
-                counter[item] += 1
+    items = [i.strip().lower() for i in entry.split(",")]
+    for item in items:
+        if item in normalized_categories:
+            counter[normalized_categories[item]] += 1
 
 df_support = pd.DataFrame(counter.items(), columns=['Support', 'Count']).sort_values(by='Count', ascending=False)
 
@@ -1190,7 +1176,7 @@ df_support = pd.DataFrame(counter.items(), columns=['Support', 'Count']).sort_va
 # Support Bar Chart - Quarterly Format
 support_bar = px.bar(
     df_support_quarterly,
-    x='Support',
+    x='Month',
     y='Count',
     color='Support',
     barmode='group',
@@ -1265,7 +1251,7 @@ support_pie = px.pie(
 ).update_traces(
     rotation=20,
     textfont=dict(size=16),
-    texttemplate='%{value}<br>(%{percent:.1%})',
+    texttemplate='(%{percent:.1%})',
     hovertemplate='<b>%{label}</b>: %{value}<extra></extra>'
 )
 
