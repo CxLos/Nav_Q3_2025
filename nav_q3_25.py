@@ -1,10 +1,13 @@
 
 # =================================== IMPORTS ================================= #
-import csv, sqlite3
+
+import os
+import sys
+
+# -----------------------
 import numpy as np 
 import pandas as pd 
-import seaborn as sns 
-import matplotlib.pyplot as plt 
+# import matplotlib.pyplot as plt 
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 from geopy.geocoders import Nominatim
@@ -13,12 +16,10 @@ import plotly.express as px
 from collections import Counter
 from datetime import datetime, timedelta
 import folium
-import os
-import sys
+
+# ---------------------
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output, State
-from dash.development.base_component import Component
 
 # Google Web Credentials
 import json
@@ -153,7 +154,7 @@ df.rename(
         "Total travel time (minutes):": "Travel Time",
         "Location Encountered:": "Location",
         "Individual's Insurance Status:": "Insurance",
-        "Type of Support Given:": "Support",
+        "Type of Coordination/Navigation Provided:": "Support",
         "Race / Ethnicity:" : "Ethnicity",
         "ZIP Code:" : "ZIP",
         "Individual's Status:": "Status",
@@ -1906,7 +1907,7 @@ pf_pie = px.pie(
 
 df['ZIP2'] = df['ZIP']
 
-print("ZIP2 Unique Before:", df['ZIP2'].unique().tolist())
+# print("ZIP2 Unique Before:", df['ZIP2'].unique().tolist())
 
 zip_unique =[
 78753, 78724, 78660, 78721, '', 78723, 78748, 78729, 78744, 78754, 78758, 78653, 78617, 78759, 78664, 'UnKnown', 'Unknown', 'uknown', 'Unknown ', 78727, 78747, 78725, 78752, 78659, 78757, 78745, 78741, 78644, 78616, 78621, 78742, 78704, 78701, 78612, 78640, 78702, 78654, 78628, 78751, 78734, 78746, 78566, 78737, 78633, 78728, 76016, 78626, 78652
